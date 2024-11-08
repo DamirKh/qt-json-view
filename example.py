@@ -2,7 +2,7 @@ from functools import partial
 import json
 import os
 
-from Qt import QtWidgets
+from PyQt6 import QtWidgets
 
 from qt_json_view import model
 from qt_json_view.model import JsonModel
@@ -112,4 +112,4 @@ if __name__ == '__main__':
     widget.show()
     view.expandAll()
 
-    app.exec_()
+    app.exec()

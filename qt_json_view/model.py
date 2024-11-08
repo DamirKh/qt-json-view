@@ -1,4 +1,5 @@
-from Qt import QtGui, QtCore
+from PyQt6 import QtGui, QtCore
+from PyQt6.QtCore import QRegularExpression, QSortFilterProxyModel
 from collections import OrderedDict
 
 from qt_json_view import datatypes
@@ -9,7 +10,7 @@ from qt_json_view.datatypes import match_type, TypeRole, ListType, DictType, Sch
 class JsonModel(QtGui.QStandardItemModel):
     """Represent JSON-serializable data."""
 
-    NON_DEFAULT_COLOR = QtCore.Qt.yellow
+    NON_DEFAULT_COLOR = QtCore.Qt.GlobalColor.yellow
 
     def __init__(
             self,
@@ -48,39 +49,40 @@ class JsonModel(QtGui.QStandardItemModel):
         return data
 
     def data(self, index, role):
-        if index.column() == 1 and role == QtCore.Qt.ForegroundRole:
+        if index.column() == 1 and role == QtCore.Qt.ItemDataRole.ForegroundRole:
             schema = index.data(SchemaRole) or {}
             default = schema.get('default')
-            if default is not None and default != index.data(QtCore.Qt.DisplayRole):
+            if default is not None and default != index.data(QtCore.Qt.ItemDataRole.DisplayRole):
                 return QtGui.QBrush(self.NON_DEFAULT_COLOR)
 
         return super(JsonModel, self).data(index, role)
 
 
-class JsonSortFilterProxyModel(QtCore.QSortFilterProxyModel):
-    """Show ALL occurences by keeping the parents of each occurence visible."""
+class JsonSortFilterProxyModel(QSortFilterProxyModel):
+    """Show ALL occurrences by keeping the parents of each occurrence visible."""
 
     def __init__(self, parent=None):
-        super(JsonSortFilterProxyModel, self).__init__(parent=parent)
+        super().__init__(parent=parent)
         self.keep_children = False
 
-    def filterAcceptsRow(self, sourceRow, sourceParent):
-        """Accept the row if the parent has been accepted."""
-        index = self.sourceModel().index(sourceRow, self.filterKeyColumn(), sourceParent)
+    def filterAcceptsRow(self, source_row, source_parent):
+        """Accept the row if it matches the filter or if its parent does (and keep_children is True)."""
+        index = self.sourceModel().index(source_row, self.filterKeyColumn(), source_parent)
         return self.accept_index(index)
 
     def accept_index(self, index):
         if index.isValid():
             text = str(index.data(self.filterRole()))
-            if self.filterRegExp().indexIn(text) >= 0:
+            if self.filterRegularExpression().match(text).hasMatch():  # Use match() and hasMatch()
                 return True
             if self.keep_children:
                 parent = index.parent()
                 while parent.isValid():
                     parent_text = str(parent.data(self.filterRole()))
-                    if self.filterRegExp().indexIn(parent_text) >= 0:
+                    if self.filterRegularExpression().match(parent_text).hasMatch():
                         return True
                     parent = parent.parent()
+            # Recursively check children
             for row in range(index.model().rowCount(index)):
                 if self.accept_index(index.model().index(row, self.filterKeyColumn(), index)):
                     return True

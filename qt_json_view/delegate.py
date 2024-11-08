@@ -1,4 +1,4 @@
-from Qt import QtWidgets, QtCore
+from PyQt6 import QtWidgets, QtCore
 
 from qt_json_view.datatypes import DataType, TypeRole
 

@@ -1,4 +1,4 @@
-from Qt import QtCore, QtWidgets, QtGui
+from PyQt6 import QtCore, QtWidgets, QtGui
 
 from qt_json_view import delegate
 from qt_json_view.datatypes import TypeRole
@@ -10,10 +10,10 @@ class JsonView(QtWidgets.QTreeView):
     def __init__(self, parent=None):
         super(JsonView, self).__init__(parent=parent)
         self.setMouseTracking(True)
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
         self.customContextMenuRequested.connect(self._menu)
         self.setItemDelegate(delegate.JsonDelegate())
-        ctrl_c = QtWidgets.QShortcut(
+        ctrl_c = QtGui.QShortcut(
             QtGui.QKeySequence(self.tr("Ctrl+c")), self)
         ctrl_c.activated.connect(self.copy)
         self.clicked.connect(self._on_clicked)
@@ -23,10 +23,10 @@ class JsonView(QtWidgets.QTreeView):
         menu = QtWidgets.QMenu()
         actions = self.actions()
 
-        expand_all = QtWidgets.QAction("Expand All", self)
+        expand_all = QtGui.QAction("Expand All", self)
         expand_all.triggered.connect(self.expandAll)
         actions.append(expand_all)
-        collapse_all = QtWidgets.QAction("Collapse All", self)
+        collapse_all = QtGui.QAction("Collapse All", self)
         collapse_all.triggered.connect(self.collapseAll)
         actions.append(collapse_all)
 
